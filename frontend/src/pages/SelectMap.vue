@@ -492,5 +492,8 @@ onMounted(() => {
   border-color: #c62828;
 }
 .fav-btn:active { opacity: .8; }
-.icon { font-size: 14px; line-height:1; }
+
+
+
+
 </style>

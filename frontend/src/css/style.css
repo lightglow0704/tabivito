@@ -53,9 +53,47 @@ input:focus {
 
 
 * { box-sizing: border-box; }
-body { margin: 0; font-family: "Noto Sans KR", system-ui, sans-serif; background:#fafafa; color:#333; }
+
+.content p,
+.content h3,
+.content li,
+.content strong,
+.content .tip-line,
+.text-wrap span,
+.text-wrap div,
+.text-wrap li,
+.text-wrap strong,
+.text-wrap .tip-line {
+    font-family:
+            "Noto Sans JP",
+            "Noto Sans CJK JP",
+            "Noto Sans KR",
+            "MS Gothic",
+            system-ui,
+            sans-serif !important;
+    font-weight: 400;
+    color: #333;
+    line-height: 1.5;
+    letter-spacing: -0.02em;
+}
+
 a { color: inherit; text-decoration: none; }
 button { background:#008cff; color:#fff; border:0; border-radius:6px; cursor:pointer; transition:.15s; }
 button:hover { background:#006ad1; }
 input { border:1px solid #ccc; border-radius:6px; }
 input:focus { outline:none; border-color:#008cff; }
+
+
+/* 기본 설정 */
+body {
+    margin: 0;
+    background: #fafafa;
+    color: #333;
+    line-height: 1.5;
+}
+
+
+/* 폼 요소도 폰트 상속받게 */
+button, input, textarea, select {
+    font-family: inherit;
+}
