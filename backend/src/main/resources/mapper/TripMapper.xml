@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travelmanager.backend.test.mapper.TripMapper">
+
+    <select id="findAll" resultType="com.travelmanager.backend.test.model.Trip">
+        SELECT
+            id,
+            region,
+            title,
+            description
+        FROM trip
+        ORDER BY id ASC;
+    </select>
+
+    <select id="findById" parameterType="int" resultType="com.travelmanager.backend.test.model.Trip">
+        SELECT
+            id,
+            region,
+            title,
+            description
+        FROM trip
+        WHERE id = #{id};
+    </select>
+
+    <insert id="insert" parameterType="com.travelmanager.backend.test.model.Trip">
+        INSERT INTO trip (region, title, description)
+        VALUES (#{region}, #{title}, #{description});
+    </insert>
+
+    <update id="update" parameterType="com.travelmanager.backend.test.model.Trip">
+        UPDATE trip
+        SET region=#{region}, title=#{title}, description=#{description}
+        WHERE id=#{id};
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM trip WHERE id=#{id};
+    </delete>
+
+</mapper>

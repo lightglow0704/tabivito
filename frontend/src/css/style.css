@@ -1,0 +1,61 @@
+/* ✅ 전역 기본 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Noto Sans KR", sans-serif;
+}
+
+body {
+    background-color: #fafafa;
+    color: #333;
+}
+
+/* 링크 스타일 */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 중앙 정렬 유틸 */
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 버튼 공통 */
+button {
+    cursor: pointer;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: #008cff;
+    color: white;
+    font-size: 14px;
+    transition: 0.2s;
+}
+button:hover {
+    background: #006ad1;
+}
+
+/* 입력창 공통 */
+input {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    outline: none;
+}
+input:focus {
+    border-color: #008cff;
+}
+
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Noto Sans KR", system-ui, sans-serif; background:#fafafa; color:#333; }
+a { color: inherit; text-decoration: none; }
+button { background:#008cff; color:#fff; border:0; border-radius:6px; cursor:pointer; transition:.15s; }
+button:hover { background:#006ad1; }
+input { border:1px solid #ccc; border-radius:6px; }
+input:focus { outline:none; border-color:#008cff; }
