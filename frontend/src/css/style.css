@@ -71,10 +71,10 @@ input:focus {
             "MS Gothic",
             system-ui,
             sans-serif !important;
-    font-weight: 400;
     color: #333;
     line-height: 1.5;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.03em;
 }
 
 a { color: inherit; text-decoration: none; }
