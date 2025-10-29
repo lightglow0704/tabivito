@@ -486,11 +486,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all .15s;
 }
-.fav-btn.active {
-  background: #c62828;
-  color: #fff;
-  border-color: #c62828;
-}
+
 .fav-btn:active { opacity: .8; }
 
 
