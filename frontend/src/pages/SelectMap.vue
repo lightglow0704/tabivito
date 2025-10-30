@@ -5,15 +5,17 @@ import { useI18n } from 'vue-i18n'
 import { getPlansForLocale } from '@/data/plansLoader.js'
 import { useUserStore } from '@/store/userStore'
 
+// 🌏 i18n & store 세팅
 const { t, locale } = useI18n({ useScope: 'global' })
 const userStore = useUserStore()
+const me = computed(() => userStore.me)
 
-// 라우트에서 city/style 받기
+// 🔍 라우트에서 city/style 쿼리 받기
 const route = useRoute()
 const chosenCity = route.query.city || ''
 const chosenStyle = route.query.style || ''
 
-// 지도 핀
+// 🗾 지도 위 도시 핀들
 const spots = [
   { id: 'tokyo',   labelKey: 'main.city.tokyo',   top: '50%', left: '67%' },
   { id: 'osaka',   labelKey: 'main.city.osaka',   top: '57%', left: '47.5%' },
@@ -24,51 +26,72 @@ const spots = [
 
 const activeSpotId = ref('')
 
-// 최초 진입 시 로컬 즐겨찾기 로드
-onMounted(() => {
+// ✅ 첫 진입 시 로그인/찜 데이터 로드
+onMounted(async () => {
+  await userStore.fetchMeOnce()
   userStore.loadFavorites()
 })
 
-// 현재 로케일의 특정 도시 카드 전부
+// 🗂️ 현재 로케일 기준 특정 도시의 카드들
 function getAllCardsForCity(city) {
   const allPlans = getPlansForLocale(locale.value)
   const cityData = allPlans[city]
   if (!cityData) return []
   return Object.values(cityData)
-  .flat()
-  .map(c => ({ ...c, imgRaw: c.img }))   // ✅ 원본 경로 유지
+      .flat()
+      .map(c => ({ ...c, imgRaw: c.img })) // imgRaw 유지
 }
 
-// 우측 패널 데이터
+// 🔁 현재 보여줄 카드들
 const displayCards = computed(() => {
   if (activeSpotId.value) return getAllCardsForCity(activeSpotId.value)
 
   const city = chosenCity || 'tokyo'
   const style = chosenStyle || null
-
   const allPlans = getPlansForLocale(locale.value)
   const cityData = allPlans[city]
   if (!cityData) return []
 
-  if (style && cityData[style]) return cityData[style]
-  return Object.values(cityData).flat()
+  if (style && cityData[style]) {
+    return cityData[style].map(c => ({ ...c, imgRaw: c.img }))
+  }
+  return Object.values(cityData).flat().map(c => ({ ...c, imgRaw: c.img }))
 })
 
+// 📍 핀 클릭 시 해당 도시 표시
 function selectSpot(id) {
   activeSpotId.value = id
 }
 
-// ✅ 스토어 사용
-const toggleFavorite = (card) => userStore.toggleFavorite(card)
-const isFavored      = (card) => userStore.isFavorite(card)
+// 🪪 로그인 안내 메시지 (JP/KR 자동)
+const needLoginMsg = computed(() => {
+  const msg = t('login.need')
+  if (msg && msg !== 'login.need') return msg
+  return locale.value === 'jp' ? 'ログインしてください。' : '로그인이 필요합니다.'
+})
 
-// 로케일 변경 시 안전하게 재로드
+// ❤️ 찜 버튼 토글
+function onToggleFavorite(card) {
+  if (!me.value) {
+    alert(needLoginMsg.value)
+    return
+  }
+  const result = userStore.toggleFavorite(card)
+  if (result === 'OK') {
+    // 정상 토글 (UI 자동 반영)
+  }
+}
+
+// ✅ 찜 여부
+const isFavored = (card) => userStore.isFavorite(card)
+
+// 🌐 로케일 변경 시 찜 목록 다시 불러오기
 watch(locale, () => userStore.loadFavorites())
 </script>
 
 <template>
   <div class="map-page-root">
-    <!-- 지도 -->
+    <!-- 🗾 지도 -->
     <div class="map-layer">
       <div class="map-figure">
         <img class="japan-bg" src="../assets/nippon_icon.png" :alt="t('main.mapAlt')" />
@@ -86,7 +109,7 @@ watch(locale, () => userStore.loadFavorites())
       </div>
     </div>
 
-    <!-- 우측 패널 -->
+    <!-- 📜 오른쪽 추천 리스트 -->
     <aside class="side-panel">
       <header class="panel-header">
         <p class="mini">TABIVITO {{ t('main.recommendTitle') }}</p>
@@ -109,6 +132,7 @@ watch(locale, () => userStore.loadFavorites())
         <p class="hint" v-html="t('main.hintHTML')"></p>
       </header>
 
+      <!-- ✅ 여행 카드 목록 -->
       <div class="panel-scroll">
         <div
             v-for="(c, idx) in displayCards"
@@ -122,13 +146,9 @@ watch(locale, () => userStore.loadFavorites())
 
             <div class="text-wrap">
               <span class="tag">{{ c.tag }}</span>
-
               <div class="title">{{ c.title }}</div>
               <div class="subtitle">{{ c.subtitle }}</div>
-
-              <div class="desc-main">
-                {{ c.bottomDesc }}
-              </div>
+              <div class="desc-main">{{ c.bottomDesc }}</div>
 
               <ul class="info-list">
                 <li v-if="c.content?.hours">
@@ -159,10 +179,12 @@ watch(locale, () => userStore.loadFavorites())
               {{ t('main.more') }}
             </a>
 
+            <!-- ❤️ 찜 버튼 -->
             <button
                 class="fav-btn"
                 :class="{ on: isFavored(c) }"
-                @click="toggleFavorite(c)"
+                :title="!me ? needLoginMsg : ''"
+                @click="onToggleFavorite(c)"
             >
               <span v-if="isFavored(c)">💖 {{ t('main.favored') }}</span>
               <span v-else>🤍 {{ t('main.fav') }}</span>
@@ -175,7 +197,7 @@ watch(locale, () => userStore.loadFavorites())
 </template>
 
 <style scoped>
-/* — 기존 스타일 그대로 — */
+/* 🎨 스타일 원본 그대로 유지 */
 .map-page-root{position:relative;width:100vw;height:calc(100vh - 60px);background:linear-gradient(180deg,#aee6ff 0%,#e8faff 100%);overflow:hidden;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
 .map-layer{position:absolute;inset:0;display:flex;justify-content:flex-start;align-items:center;padding-left:8vw;padding-right:400px;box-sizing:border-box}
 .map-figure{position:relative;width:900px;aspect-ratio:1/1;max-width:90vw;filter:drop-shadow(0 25px 40px rgba(0,0,0,.4))}

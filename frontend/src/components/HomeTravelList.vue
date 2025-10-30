@@ -1,14 +1,14 @@
-<!-- src/components/HomeTravelList.vue -->
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getPlansForLocale } from '@/data/plansLoader.js'
 import { useUserStore } from '@/store/userStore'
 
 const { t, locale } = useI18n({ useScope: 'global' })
 const userStore = useUserStore()
+const me = computed(() => userStore.me)
 
-/* --- 이미지 경로 매핑: 네 기존 값 유지 --- */
+/* --- 이미지 경로 매핑: 기존 유지 --- */
 const imageURLMap = {
   'src/assets/tokyo/cafe/yanaka-ginza.jpg': new URL('@/assets/tokyo/cafe/yanaka-ginza.jpg', import.meta.url).href,
   'src/assets/tokyo/nature/shinjuku-park.jpg': new URL('@/assets/tokyo/nature/shinjuku-park.jpg', import.meta.url).href,
@@ -49,64 +49,57 @@ const imageURLMap = {
   'src/assets/nagoya/trip/shirakawago.jpg': new URL('@/assets/nagoya/trip/shirakawago.jpg', import.meta.url).href,
   'src/assets/nagoya/spa/gero_onsen.jpg': new URL('@/assets/nagoya/spa/gero_onsen.jpg', import.meta.url).href,
   'src/assets/nagoya/festival/nabana_no_sato.jpg': new URL('@/assets/nagoya/festival/nabana_no_sato.jpg', import.meta.url).href,
-
-  'src/assets/fukuoka/cafe/futamigaura.jpg': new URL('@/assets/fukuoka/cafe/futamigaura.jpg', import.meta.url).href,
-  'src/assets/fukuoka/walk/ohori_park.jpg': new URL('@/assets/fukuoka/walk/ohori_park.jpg', import.meta.url).href,
-  'src/assets/fukuoka/walk/mojiko_retro.jpg': new URL('@/assets/fukuoka/walk/mojiko_retro.jpg', import.meta.url).href,
-  'src/assets/fukuoka/nature/nokonoshima.jpg': new URL('@/assets/fukuoka/nature/nokonoshima.jpg', import.meta.url).href,
-  'src/assets/fukuoka/nature/senjo_hara_park.jpg': new URL('@/assets/fukuoka/nature/senjo_hara_park.jpg', import.meta.url).href,
-  'src/assets/fukuoka/nature/chofu_garden.jpg': new URL('@/assets/fukuoka/nature/chofu_garden.jpg', import.meta.url).href,
-  'src/assets/fukuoka/photo/hinoyama_ropeway.jpg': new URL('@/assets/fukuoka/photo/hinoyama_ropeway.jpg', import.meta.url).href,
-  'src/assets/fukuoka/culture/kanmon_museum.jpg': new URL('@/assets/fukuoka/culture/kanmon_museum.jpg', import.meta.url).href,
-
-  'src/assets/sapporo/cafe/maruyama_koen.jpg': new URL('@/assets/sapporo/cafe/maruyama_koen.jpg', import.meta.url).href,
-  'src/assets/sapporo/nature/odori_park.jpg': new URL('@/assets/sapporo/nature/odori_park.jpg', import.meta.url).href,
-  'src/assets/sapporo/photo/moiwa_yama.jpg': new URL('@/assets/sapporo/photo/moiwa_yama.jpg', import.meta.url).href,
-  'src/assets/sapporo/food/nijo_ichiba.jpg': new URL('@/assets/sapporo/food/nijo_ichiba.jpg', import.meta.url).href,
-  'src/assets/sapporo/shopping/tanukikoji.jpg': new URL('@/assets/sapporo/shopping/tanukikoji.jpg', import.meta.url).href,
-  'src/assets/sapporo/culture/sapporo_beer_museum.jpg': new URL('@/assets/sapporo/culture/sapporo_beer_museum.jpg', import.meta.url).href,
-  'src/assets/sapporo/trip/blue_pond.jpg': new URL('@/assets/sapporo/trip/blue_pond.jpg', import.meta.url).href,
-  'src/assets/sapporo/trip/seven_stars_tree.jpg': new URL('@/assets/sapporo/trip/seven_stars_tree.jpg', import.meta.url).href,
-  'src/assets/sapporo/festival/snow_festival.jpg': new URL('@/assets/sapporo/festival/snow_festival.jpg', import.meta.url).href,
-  'src/assets/sapporo/festival/beer_garden.jpg': new URL('@/assets/sapporo/festival/beer_garden.jpg', import.meta.url).href,
 }
+
 const FALLBACK_IMG = new URL('@/assets/carousel/carousel1.jpg', import.meta.url).href
 
 function normalizeCard(card) {
- const raw = card?.img || null          // 원본(상대) 경로 저장
- const fixedImg = (raw && imageURLMap[raw]) ? imageURLMap[raw] : FALLBACK_IMG
- return { ...card, imgRaw: raw, img: fixedImg }
+  const raw = card?.img || null
+  const fixedImg = (raw && imageURLMap[raw]) ? imageURLMap[raw] : FALLBACK_IMG
+  return { ...card, imgRaw: raw, img: fixedImg }
 }
 
 const travels = ref([])
 
 function buildHomeTravels() {
-  const plans = getPlansForLocale()
+  const plans = getPlansForLocale(locale.value) // ✅ locale 인자 추가
   const list = []
-  if (plans.tokyo?.cafe?.[0])    list.push(plans.tokyo.cafe[0])
-  if (plans.tokyo?.photo?.[2])   list.push(plans.tokyo.photo[2])
-  if (plans.osaka?.cafe?.[0])    list.push(plans.osaka.cafe[0])
-  if (plans.osaka?.food?.[0])    list.push(plans.osaka.food[0])
-  if (plans.nagoya?.trip?.[1])   list.push(plans.nagoya.trip[1])
-  if (plans.fukuoka?.walk?.[0])  list.push(plans.fukuoka.walk[0])
+  if (plans.tokyo?.cafe?.[0]) list.push(plans.tokyo.cafe[0])
+  if (plans.tokyo?.photo?.[2]) list.push(plans.tokyo.photo[2])
+  if (plans.osaka?.cafe?.[0]) list.push(plans.osaka.cafe[0])
+  if (plans.osaka?.food?.[0]) list.push(plans.osaka.food[0])
+  if (plans.nagoya?.trip?.[1]) list.push(plans.nagoya.trip[1])
+  if (plans.fukuoka?.walk?.[0]) list.push(plans.fukuoka.walk[0])
   if (plans.sapporo?.photo?.[0]) list.push(plans.sapporo.photo[0])
-  if (plans.fukuoka?.cafe?.[0])  list.push(plans.fukuoka.cafe[0])
+  if (plans.fukuoka?.cafe?.[0]) list.push(plans.fukuoka.cafe[0])
   travels.value = list.slice(0, 8).map(normalizeCard)
 }
 
-onMounted(() => {
-  userStore.loadFavorites()      // ✅ 스토어에서 로컬 찜 로드
+onMounted(async () => {
+  await userStore.fetchMeOnce()
+  userStore.loadFavorites()
   buildHomeTravels()
 })
 
 watch(locale, () => {
   buildHomeTravels()
-  userStore.loadFavorites()      // ✅ 로케일 바뀔 때도 재로딩
+  userStore.loadFavorites()
 })
 
-// ✅ 스토어의 API만 사용
-const toggleFavorite = (item) => userStore.toggleFavorite(item)
-const isFavored      = (item) => userStore.isFavorite(item)
+// ✅ 로그인 안내 문구
+const needLoginMsg = computed(() =>
+    locale.value === 'jp' ? 'ログインしてください。' : '로그인을 해주세요.'
+)
+
+// ✅ 찜 버튼 클릭 시 로그인 확인
+function onToggleFavorite(item) {
+  if (!me.value) {
+    alert(needLoginMsg.value)
+    return
+  }
+  userStore.toggleFavorite(item)
+}
+const isFavored = (item) => userStore.isFavorite(item)
 </script>
 
 <template>
@@ -121,15 +114,9 @@ const isFavored      = (item) => userStore.isFavorite(item)
           </div>
 
           <div class="content">
-            <p class="subtitle">
-              {{ item.tag }} · {{ item.subtitle }}
-            </p>
-
+            <p class="subtitle">{{ item.tag }} · {{ item.subtitle }}</p>
             <h3 class="name">{{ item.title }}</h3>
-
-            <p class="desc">
-              {{ item.bottomDesc }}
-            </p>
+            <p class="desc">{{ item.bottomDesc }}</p>
 
             <ul class="info-list">
               <li v-if="item.content?.hours">
@@ -158,14 +145,20 @@ const isFavored      = (item) => userStore.isFavorite(item)
                 {{ t('travelList.detailLink') }}
               </a>
 
-              <button v-else class="detail detail-disabled" disabled>
+              <button
+                  v-else
+                  class="detail detail-disabled"
+                  disabled
+              >
                 {{ t('travelList.detailLink') }}
               </button>
 
+              <!-- ❤️ 찜 버튼 -->
               <button
                   class="fav"
                   :class="{ active: isFavored(item) }"
-                  @click="toggleFavorite(item)"
+                  :title="!me ? needLoginMsg : ''"
+                  @click="onToggleFavorite(item)"
               >
                 {{ isFavored(item) ? t('travelList.favDone') : t('travelList.favAdd') }}
               </button>
@@ -178,6 +171,7 @@ const isFavored      = (item) => userStore.isFavorite(item)
 </template>
 
 <style scoped>
+/* 🎨 기존 스타일 그대로 유지 */
 .travel-section.fullbleed {
   width: 100vw;
   position: relative;
