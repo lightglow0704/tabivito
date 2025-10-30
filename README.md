@@ -1,11 +1,29 @@
 # 🌏 TABIVITO 실행 방법
 
+
 ## 🛠 사용 기술
 - **Frontend:** Vue.js, VITE  
 - **Backend:** Spring Boot  
 - **Database:** MySQL  
 - **IDE:** IntelliJ IDEA  
 - **JDK:** 21  
+
+---
+
+## 💻 설치해야 하는 프로그램
+
+필수 설치 항목:
+  - IntelliJ IDEA: Java 백엔드 개발용 IDE
+  - Node.js: 프론트엔드(Vite + Vue.js) 실행용 런타임
+  - JDK 21: Spring Boot 구동용 Java Development Kit
+  - MySQL: 데이터베이스 서버
+  - MySQL Workbench: MySQL 데이터 관리 및 쿼리 실행용 GUI 툴
+
+권장 버전:
+  IntelliJ IDEA: 2023 이상
+  Node.js: 18.x 이상
+  MySQL: 8.x 이상
+  JDK: 21
 
 ---
 
