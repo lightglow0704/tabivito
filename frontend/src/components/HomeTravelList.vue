@@ -1,42 +1,14 @@
+<!-- src/components/HomeTravelList.vue -->
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { getPlansForLocale } from '@/data/plansLoader.js'
+import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { getPlansForLocale } from '@/data/plansLoader.js'
+import { useUserStore } from '@/store/userStore'
 
 const { t, locale } = useI18n({ useScope: 'global' })
+const userStore = useUserStore()
 
-
-const favoredNames = ref(new Set())
-
-function loadFavoredFromStorage() {
-  try {
-    const raw = localStorage.getItem('favTitles')
-    if (raw) {
-      favoredNames.value = new Set(JSON.parse(raw))
-    }
-  } catch {
-    favoredNames.value = new Set()
-  }
-}
-
-function saveFavoredToStorage() {
-  localStorage.setItem('favTitles', JSON.stringify([...favoredNames.value]))
-}
-
-function toggleFavorite(card) {
-  if (!card?.title) return
-  if (favoredNames.value.has(card.title)) {
-    favoredNames.value.delete(card.title)
-  } else {
-    favoredNames.value.add(card.title)
-  }
-  saveFavoredToStorage()
-}
-
-function isFavored(card) {
-  return !!card?.title && favoredNames.value.has(card.title)
-}
-
+/* --- 이미지 경로 매핑: 네 기존 값 유지 --- */
 const imageURLMap = {
   'src/assets/tokyo/cafe/yanaka-ginza.jpg': new URL('@/assets/tokyo/cafe/yanaka-ginza.jpg', import.meta.url).href,
   'src/assets/tokyo/nature/shinjuku-park.jpg': new URL('@/assets/tokyo/nature/shinjuku-park.jpg', import.meta.url).href,
@@ -98,26 +70,18 @@ const imageURLMap = {
   'src/assets/sapporo/festival/snow_festival.jpg': new URL('@/assets/sapporo/festival/snow_festival.jpg', import.meta.url).href,
   'src/assets/sapporo/festival/beer_garden.jpg': new URL('@/assets/sapporo/festival/beer_garden.jpg', import.meta.url).href,
 }
-
-// fallback 이미지 한 장 골라서 지정
 const FALLBACK_IMG = new URL('@/assets/carousel/carousel1.jpg', import.meta.url).href
 
 function normalizeCard(card) {
-  // card.img가 문자열이면 거기서 매핑 URL 찾아서 덮어씌움
-  const fixedImg =
-      (card?.img && imageURLMap[card.img]) ? imageURLMap[card.img] : FALLBACK_IMG
-
-  return {
-    ...card,
-    img: fixedImg,
-  }
+ const raw = card?.img || null          // 원본(상대) 경로 저장
+ const fixedImg = (raw && imageURLMap[raw]) ? imageURLMap[raw] : FALLBACK_IMG
+ return { ...card, imgRaw: raw, img: fixedImg }
 }
 
 const travels = ref([])
 
 function buildHomeTravels() {
   const plans = getPlansForLocale()
-
   const list = []
   if (plans.tokyo?.cafe?.[0])    list.push(plans.tokyo.cafe[0])
   if (plans.tokyo?.photo?.[2])   list.push(plans.tokyo.photo[2])
@@ -127,18 +91,22 @@ function buildHomeTravels() {
   if (plans.fukuoka?.walk?.[0])  list.push(plans.fukuoka.walk[0])
   if (plans.sapporo?.photo?.[0]) list.push(plans.sapporo.photo[0])
   if (plans.fukuoka?.cafe?.[0])  list.push(plans.fukuoka.cafe[0])
-
   travels.value = list.slice(0, 8).map(normalizeCard)
 }
 
 onMounted(() => {
-  loadFavoredFromStorage()
+  userStore.loadFavorites()      // ✅ 스토어에서 로컬 찜 로드
   buildHomeTravels()
 })
 
 watch(locale, () => {
   buildHomeTravels()
+  userStore.loadFavorites()      // ✅ 로케일 바뀔 때도 재로딩
 })
+
+// ✅ 스토어의 API만 사용
+const toggleFavorite = (item) => userStore.toggleFavorite(item)
+const isFavored      = (item) => userStore.isFavorite(item)
 </script>
 
 <template>
@@ -190,11 +158,7 @@ watch(locale, () => {
                 {{ t('travelList.detailLink') }}
               </a>
 
-              <button
-                  v-else
-                  class="detail detail-disabled"
-                  disabled
-              >
+              <button v-else class="detail detail-disabled" disabled>
                 {{ t('travelList.detailLink') }}
               </button>
 
@@ -203,11 +167,7 @@ watch(locale, () => {
                   :class="{ active: isFavored(item) }"
                   @click="toggleFavorite(item)"
               >
-                {{
-                  isFavored(item)
-                      ? t('travelList.favDone')
-                      : t('travelList.favAdd')
-                }}
+                {{ isFavored(item) ? t('travelList.favDone') : t('travelList.favAdd') }}
               </button>
             </div>
           </div>
@@ -218,7 +178,6 @@ watch(locale, () => {
 </template>
 
 <style scoped>
-/* (스타일은 방금 버전이랑 동일하니까 그대로 둔다) */
 .travel-section.fullbleed {
   width: 100vw;
   position: relative;
@@ -229,192 +188,39 @@ watch(locale, () => {
   padding: 42px 0 60px;
   background: #fff;
 }
+.container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); box-sizing: border-box; }
+.title { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 28px; color: #111; white-space: pre-line; }
+.grid { display: grid; gap: 32px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+@media (min-width: 1280px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
-/* 내부 컨테이너 */
-.container {
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 40px);
-  box-sizing: border-box;
-}
+.card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #eee; box-shadow: 0 4px 14px rgba(0,0,0,.09); transition: transform .2s, box-shadow .2s; }
+.card:hover { transform: translateY(-6px); box-shadow: 0 14px 28px rgba(0,0,0,.16); }
 
-/* 타이틀 */
-.title {
-  font-size: 28px;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 28px;
-  color: #111;
-  white-space: pre-line;
-}
+.thumb { width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: #f2f2f2; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* 그리드 */
-.grid {
-  display: grid;
-  gap: 32px;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-@media (min-width: 1280px) {
-  .grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
+.content { padding: 22px 22px 26px; }
 
-/* 카드 */
-.card {
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 14px rgba(0,0,0,.09);
-  transition: transform .2s, box-shadow .2s;
-}
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 14px 28px rgba(0,0,0,.16);
-}
-
-/* 썸네일 */
-.thumb {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  background: #f2f2f2;
-}
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* 내용 */
-.content {
-  padding: 22px 22px 26px;
-}
-
-/* ===== 텍스트 공통 리셋 ===== */
-.subtitle,
-.name,
-.desc,
-.info-list,
-.info-list strong,
-.tip-line {
-  white-space: pre-line;          /* 우리가 데이터에 넣은 \n 유지 */
-  word-break: break-word;         /* 박스 밖으로 넘칠 때만 적당히 끊어 */
-  overflow-wrap: break-word;      /* 너무 긴 단어/URL만 강제로 줄바꿈 */
-}
-
-/* 세부 텍스트 스타일 */
-.subtitle {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 8px;
-  line-height: 1.4;
-}
-
-.name {
-  font-size: 20px;
-  font-weight: 800;
-  color: #333;
-  margin: 0 0 12px;
-  line-height: 1.3;
-}
-
-.desc {
-  font-size: 14px;
-  color: #4a443a;
-  line-height: 1.5;
-  margin: 0 0 14px;
-}
-
-.info-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-  font-size: 13px;
-  color: #4a443a;
-  line-height: 1.4;
-}
-.info-list li {
-  margin-bottom: 4px;
-}
-.info-list strong {
-  color: #3a332a;
-  font-weight: 600;
-  font-size: 13px;
-  margin-right: 4px;
-}
-
-.tip-line {
-  font-size: 13px;
-  line-height: 1.4;
-  color: #8a5f00;
-  background: #fff8df;
-  border: 1px solid #e6d29a;
-  border-radius: 4px;
-  padding: 8px 10px;
-  margin-bottom: 18px;
-}
-
-/* 버튼 행 */
-.btn-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-/* 자세히 보기 버튼 */
-.detail {
-  display: inline-block;
-  text-align: center;
-  border: 0;
-  background: #444;
-  color: #fff;
-  padding: 11px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1.2;
-  font-weight: 500;
-  text-decoration: none;
+.subtitle, .name, .desc, .info-list, .info-list strong, .tip-line {
   white-space: pre-line;
   word-break: break-word;
   overflow-wrap: break-word;
 }
-.detail:hover {
-  background: #222;
-}
-.detail-disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
+.subtitle { font-size: 14px; color: #666; margin: 0 0 8px; line-height: 1.4; }
+.name { font-size: 20px; font-weight: 800; color: #333; margin: 0 0 12px; line-height: 1.3; }
+.desc { font-size: 14px; color: #4a443a; line-height: 1.5; margin: 0 0 14px; }
 
-/* 찜 버튼 */
-.fav {
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #444;
-  padding: 11px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1.2;
-  font-weight: 500;
-  transition: all .18s ease;
-  min-width: 92px;
-  text-align: center;
-  white-space: pre-line;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-.fav.active {
-  background: #ffe7eb;
-  border-color: #ff8da1;
-  color: #e40050;
-}
+.info-list { list-style: none; padding: 0; margin: 0 0 10px 0; font-size: 13px; color: #4a443a; line-height: 1.4; }
+.info-list li { margin-bottom: 4px; }
+.info-list strong { color: #3a332a; font-weight: 600; font-size: 13px; margin-right: 4px; }
 
+.tip-line { font-size: 13px; line-height: 1.4; color: #8a5f00; background: #fff8df; border: 1px solid #e6d29a; border-radius: 4px; padding: 8px 10px; margin-bottom: 18px; }
 
+.btn-row { display: flex; justify-content: space-between; gap: 10px; }
+.detail { display: inline-block; text-align: center; border: 0; background: #444; color: #fff; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-size: 15px; line-height: 1.2; font-weight: 500; text-decoration: none; white-space: pre-line; word-break: break-word; overflow-wrap: break-word; }
+.detail:hover { background: #222; }
+.detail-disabled { background: #aaa; cursor: not-allowed; }
 
+.fav { border: 1px solid #ddd; background: #fff; color: #444; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-size: 15px; line-height: 1.2; font-weight: 500; transition: all .18s ease; min-width: 92px; text-align: center; white-space: pre-line; word-break: break-word; overflow-wrap: break-word; }
+.fav.active { background: #ffe7eb; border-color: #ff8da1; color: #e40050; }
 </style>

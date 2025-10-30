@@ -33,9 +33,8 @@ export default {
         styleLabel: "취향",
         mapPick: "지도 선택",
 
-        // hintHTML은 v-html로 쓰고 있으니까 <br> 유지
         hintHTML:
-            "지도의 핀을 누르면 해당 도시의 모든 추천이 나타나요.<br />(취향과 상관 없이 전부)",
+            "지도의 핀을 누르면 해당 도시의 모든 추천이 나타나요.\n(취향과 상관 없이 전부)",
 
         // 카드 정보 라벨
         hours: "영업시간",
@@ -72,8 +71,8 @@ export default {
      * TripFlowSection.vue (여행 방식 소개)
      */
     how: {
-        headline: "장소를 한눈에,<br>그리고 한 번에!",
-        lead: "다른 곳에서는 할 수 없었던 일이 타비비토에서는 가능합니다.<br>여행 전이든 여행 중이든 내가 계획한 일정을 간편하게 수정하고 꺼내보세요.",
+        headline: "장소를 한눈에,\n그리고 한 번에!",
+        lead: "다른 곳에서는 할 수 없었던 일이 타비비토에서는 가능합니다.\n여행 전이든 여행 중이든 내가 계획한 일정을 간편하게 수정하고 꺼내보세요.",
 
         step1Num: "1",
         step1Text: "마음에 드는 도시",
@@ -100,7 +99,7 @@ export default {
 
     selectTabi: {
         backToHome: "홈 화면으로",
-        question: "이번엔 어디로<br>도망가볼까?",
+        question: "이번엔 어디로\n도망가볼까?",
         desc: "맘 끌리는 도시를 한 곳 골라주세요.",
         nextBtn: "다음",
         alertPickCity: "어디로 갈지 먼저 골라주세요!",
@@ -171,6 +170,7 @@ export default {
         usernamePH: "아이디",
         passwordPH: "비밀번호",
         submit: "로그인",
+        invalid: "아이디 또는 비밀번호가 올바르지 않습니다.",
         fail: "로그인 실패",
     },
 

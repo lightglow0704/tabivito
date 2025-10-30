@@ -166,7 +166,8 @@ export default {
         usernamePH: "ユーザーID",
         passwordPH: "パスワード",
         submit: "ログイン",
-        fail: "ログインに失敗しました",
+        invalid: "ユーザーIDまたはパスワードが正しくありません。",
+        fail: "ログインに失敗しました。",
     },
 
     signup: {

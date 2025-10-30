@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import { watch } from 'vue'
 import router from './router'
 import '@/css/style.css'
 import { createPinia } from 'pinia'
@@ -18,3 +19,7 @@ app.mount('#app')
 // 로그인 상태 초기화
 const userStore = useUserStore()
 userStore.fetchMeOnce()
+
+watch(i18n.global.locale, () => {
+      userStore.loadFavorites()
+    })

@@ -46,15 +46,21 @@ public class AuthController {
         return res;
     }
 
-
-
-
-
     @PostMapping("/login")
-    public UserDto login(@RequestBody LoginReq req, HttpSession session) {
-        User u = userService.login(req.getUsername(), req.getPassword());
-        session.setAttribute("LOGIN_USER", u.getUsername());
-        return new UserDto(u.getUsername(), u.getName(), u.getEmail());
+    public Map<String, Object> login(@RequestBody LoginReq req, HttpSession session) {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            User u = userService.login(req.getUsername(), req.getPassword());
+            session.setAttribute("LOGIN_USER", u.getUsername());
+            res.put("ok", true);
+            res.put("user", new UserDto(u.getUsername(), u.getName(), u.getEmail()));
+            return res; // 200 OK
+        } catch (IllegalArgumentException e) {
+            res.put("ok", false);
+            res.put("code", "INVALID_CREDENTIALS");
+            // 필요하면 message도 넣을 수 있음
+            return res; // 200 OK (콘솔에 빨간 줄 안 뜸)
+        }
     }
 
     @PostMapping("/logout")
@@ -71,7 +77,6 @@ public class AuthController {
         return new UserDto(u.getUsername(), u.getName(), u.getEmail());
     }
 
-    // AuthController.java
     @DeleteMapping("/delete")
     public String deleteUser(HttpSession session) {
         String username = (String) session.getAttribute("LOGIN_USER");
@@ -80,5 +85,4 @@ public class AuthController {
         session.invalidate();
         return "OK";
     }
-
 }
