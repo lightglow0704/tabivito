@@ -20,7 +20,7 @@
   - MySQL Workbench: MySQL 데이터 관리 및 쿼리 실행용 GUI 툴
 
 권장 버전:
-  IntelliJ IDEA: 2023 이상
+  IntelliJ IDEA: 2024 이상
   Node.js: 18.x 이상
   MySQL: 8.x 이상
   JDK: 21
