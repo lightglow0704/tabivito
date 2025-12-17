@@ -60,8 +60,10 @@
 ### 4️⃣ 프론트엔드 실행
 1. 명령 프롬프트(cmd) 또는 터미널을 실행합니다.  
 2. 아래 명령어를 입력해 프론트엔드 폴더로 이동합니다:
-   cd C:\TABIVITO\frontend
-3. 프론트엔드를 실행합니다:
+   예) cd C:\TABIVITO\frontend
+4. npm을 설치합니다:
+   npm install
+5. 프론트엔드를 실행합니다:
    npm run dev
 
 ---
